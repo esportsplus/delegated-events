@@ -32,7 +32,7 @@ const register = (element: Node, event: string, listener: Listener): void => {
 
             while (node) {
                 // Element node type
-                if (node.nodeType !== 1 || (node as HTMLElement)?.tagName === 'A') {
+                if (node.nodeType !== 1) {
                     break;
                 }
 
@@ -47,8 +47,7 @@ const register = (element: Node, event: string, listener: Listener): void => {
                     break;
                 }
 
-                // Manual event bubbling if event should bubble
-                if (!e.bubbles) {
+                if (!e.bubbles || (node as HTMLElement).tagName === 'A') {
                     break;
                 }
 
