@@ -32,7 +32,7 @@ const register = (element: Node, event: string, listener: Listener): void => {
 
             while (node) {
                 // Element node type
-                if (node.nodeType !== 1) {
+                if (node.nodeType !== 1 || (node as HTMLElement)?.tagName === 'A') {
                     break;
                 }
 
