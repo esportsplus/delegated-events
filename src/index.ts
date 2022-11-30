@@ -43,7 +43,7 @@ const register = (element: Node, event: string, listener: Listener): void => {
                     }
 
                     e.stopPropagation();
-                    listener(e, node);
+                    listener.call(node, e);
                     break;
                 }
 

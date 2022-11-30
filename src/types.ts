@@ -1,4 +1,4 @@
-type Listener = (e: Event, ref: Node) => void;
+type Listener = (e: Event) => void;
 
 
 export { Listener };
