@@ -38,22 +38,18 @@ const register = (element: Node, event: string, listener: Listener): void => {
 
                 // Delegated event listener found
                 if (listener = cache[event].get(node)) {
-                    if (!passive[event]) {
-                        e.preventDefault();
-                    }
-
                     e.stopPropagation();
                     listener.call(node, e);
                     break;
                 }
 
-                if (!e.bubbles || (node as HTMLElement).tagName === 'A') {
+                if (!e.bubbles) {
                     break;
                 }
 
                 node = node.parentNode;
             }
-        }, { capture: true, passive: passive[event] });
+        }, { passive: passive[event] });
     }
 
     cache[event].set(element, listener);
