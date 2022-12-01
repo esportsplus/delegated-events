@@ -1,7 +1,7 @@
-import { Listener } from './types';
+import { Configuration, Listener } from './types';
 
 
-let cache: Record<string, WeakMap<Node, Listener>> = {},
+let cache: Record<string, WeakMap<Node, Configuration>> = {},
     passive: Record<string, boolean> = {
         mousedown: true,
         mouseenter: true,
@@ -27,32 +27,32 @@ const register = (element: Node, event: string, listener: Listener): void => {
         cache[event] = new WeakMap();
 
         document.addEventListener(event, (e) => {
-            let listener,
-                node: Node | null = e.target as Node;
+            let element: Element = e.target as Element,
+                node: Node | null = element;
+
+            e.stopPropagation();
 
             while (node) {
-                // Element node type
-                if (node.nodeType !== 1) {
-                    break;
-                }
+                let { listener, shortcut }: Configuration = cache[event].get(node) || {};
 
-                // Delegated event listener found
-                if (listener = cache[event].get(node)) {
-                    e.stopPropagation();
+                if (listener) {
                     listener.call(node, e);
+
+                    if (!element.isSameNode(node)) {
+                        cache[event].set(element, {
+                            listener,
+                            shortcut: node
+                        });
+                    }
                     break;
                 }
 
-                if (!e.bubbles) {
-                    break;
-                }
-
-                node = node.parentNode;
+                node = shortcut || node.parentNode;
             }
-        }, { passive: passive[event] });
+        }, { capture: true, passive: passive[event] });
     }
 
-    cache[event].set(element, listener);
+    cache[event].set(element, { listener });
 };
 
 
