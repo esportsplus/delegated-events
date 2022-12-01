@@ -33,21 +33,21 @@ const register = (element: Node, event: string, listener: Listener): void => {
             e.stopPropagation();
 
             while (node) {
-                let { listener, shortcut }: Configuration = cache[event].get(node) || {};
+                let { delegate, listener }: Configuration = cache[event].get(node) || {};
 
                 if (listener) {
-                    listener.call(node, e);
+                    listener.call((delegate || node), e);
 
                     if (!element.isSameNode(node)) {
                         cache[event].set(element, {
-                            listener,
-                            shortcut: node
+                            delegate: node,
+                            listener
                         });
                     }
                     break;
                 }
 
-                node = shortcut || node.parentNode;
+                node = node.parentNode;
             }
         }, { capture: true, passive: passive[event] });
     }

@@ -1,6 +1,6 @@
 type Configuration = {
+    delegate?: Node;
     listener?: Listener;
-    shortcut?: Node;
 };
 
 type Listener = (e: Event) => void;
