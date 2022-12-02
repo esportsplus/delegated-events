@@ -35,14 +35,16 @@ const register = (element: Node, event: string, listener: Listener): void => {
             while (node) {
                 let { delegate, listener }: Configuration = cache[event].get(node) || {};
 
+                if (delegate) {
+                    cache[event].get(delegate)?.listener?.call(delegate, e);
+                    break;
+                }
+
                 if (listener) {
-                    listener.call((delegate || node), e);
+                    listener.call(node, e);
 
                     if (!element.isSameNode(node)) {
-                        cache[event].set(element, {
-                            delegate: node,
-                            listener
-                        });
+                        cache[event].set(element, { delegate: node });
                     }
                     break;
                 }
