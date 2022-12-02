@@ -23,8 +23,10 @@ let cache: Record<string, WeakMap<Node, Configuration>> = {},
 
 
 const register = (element: Node, event: string, listener: Listener): void => {
-    if (!cache[event]) {
-        cache[event] = new WeakMap();
+    let config = cache[event];
+
+    if (!config) {
+        config = cache[event] = new WeakMap();
 
         document.addEventListener(event, (e) => {
             let element: Element = e.target as Element,
@@ -33,10 +35,10 @@ const register = (element: Node, event: string, listener: Listener): void => {
             e.stopPropagation();
 
             while (node) {
-                let { delegate, listener }: Configuration = cache[event].get(node) || {};
+                let { delegate, listener }: Configuration = config.get(node) || {};
 
                 if (delegate) {
-                    cache[event].get(delegate)?.listener?.call(delegate, e);
+                    config.get(delegate)?.listener?.call(delegate, e);
                     break;
                 }
 
@@ -44,7 +46,7 @@ const register = (element: Node, event: string, listener: Listener): void => {
                     listener.call(node, e);
 
                     if (!element.isSameNode(node)) {
-                        cache[event].set(element, { delegate: node });
+                        config.set(element, { delegate: node });
                     }
                     break;
                 }
@@ -54,7 +56,7 @@ const register = (element: Node, event: string, listener: Listener): void => {
         }, { capture: true, passive: passive[event] });
     }
 
-    cache[event].set(element, { listener });
+    config.set(element, { listener });
 };
 
 
