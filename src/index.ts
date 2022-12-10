@@ -24,8 +24,7 @@ let cache: Cache = {},
         touchmove: true,
         touchstart: true,
         wheel: true
-    },
-    root = document.body;
+    };
 
 
 const register = (element: Node, event: string, listener: Listener): void => {
@@ -34,7 +33,7 @@ const register = (element: Node, event: string, listener: Listener): void => {
     if (!config) {
         config = cache[event] = new WeakMap();
 
-        root.addEventListener(event, (e) => {
+        document.body.addEventListener(event, (e) => {
             let element: Element = e.target as Element,
                 node: Node | null = element as Node;
 
@@ -53,7 +52,7 @@ const register = (element: Node, event: string, listener: Listener): void => {
                 }
 
                 if (listener) {
-                    if (node !== element) {
+                    if (!node.isSameNode(element)) {
                         config.set(element, { delegate: { node, listener } });
                     }
 
@@ -61,11 +60,7 @@ const register = (element: Node, event: string, listener: Listener): void => {
                     return;
                 }
 
-                node = node.parentNode;
-
-                if (node === root) {
-                    break;
-                }
+                node = node?.parentNode;
             }
 
             config.set(element, { bail: true });
@@ -76,4 +71,5 @@ const register = (element: Node, event: string, listener: Listener): void => {
 };
 
 
+// TODO: Factory method binding root node to attach delegated events to?
 export default { register };
