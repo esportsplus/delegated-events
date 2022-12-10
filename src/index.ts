@@ -1,7 +1,12 @@
-import { Configuration, Listener } from './types';
+import { Cache, Listener } from './types';
 
 
-let cache: Record<string, WeakMap<Node, Configuration>> = {},
+let cache: Cache = {},
+    capture: Record<string, boolean> = {
+        blur: true,
+        focus: true,
+        scroll: true
+    },
     passive: Record<string, boolean> = {
         mousedown: true,
         mouseenter: true,
@@ -19,7 +24,8 @@ let cache: Record<string, WeakMap<Node, Configuration>> = {},
         touchmove: true,
         touchstart: true,
         wheel: true
-    };
+    },
+    root = document.body;
 
 
 const register = (element: Node, event: string, listener: Listener): void => {
@@ -28,32 +34,42 @@ const register = (element: Node, event: string, listener: Listener): void => {
     if (!config) {
         config = cache[event] = new WeakMap();
 
-        document.addEventListener(event, (e) => {
+        root.addEventListener(event, (e) => {
             let element: Element = e.target as Element,
-                node: Node | null = element;
+                node: Node | null = element as Node;
 
             e.stopPropagation();
 
             while (node) {
-                let { delegate, listener }: Configuration = config.get(node) || {};
+                let { bail, delegate, listener } = config.get(node) || {};
+
+                if (bail) {
+                    return;
+                }
 
                 if (delegate) {
-                    config.get(delegate)?.listener?.call(delegate, e);
-                    break;
+                    delegate.listener.call(delegate.node, e);
+                    return;
                 }
 
                 if (listener) {
-                    listener.call(node, e);
-
-                    if (!element.isSameNode(node)) {
-                        config.set(element, { delegate: node });
+                    if (node !== element) {
+                        config.set(element, { delegate: { node, listener } });
                     }
-                    break;
+
+                    listener.call(node, e);
+                    return;
                 }
 
                 node = node.parentNode;
+
+                if (node === root) {
+                    break;
+                }
             }
-        }, { capture: true, passive: passive[event] });
+
+            config.set(element, { bail: true });
+        }, { capture: capture[event] || false, passive: passive[event] });
     }
 
     config.set(element, { listener });

@@ -1,9 +1,15 @@
+type Cache = Record<string, WeakMap<Node, Configuration>>;
+
 type Configuration = {
-    delegate?: Node;
+    bail?: boolean;
+    delegate?: {
+        node: Node,
+        listener: Listener
+    };
     listener?: Listener;
 };
 
 type Listener = (e: Event) => void;
 
 
-export { Configuration, Listener };
+export { Cache, Listener };
